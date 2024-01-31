@@ -1,6 +1,6 @@
 import axios from "axios";
-import { showToast, closeToast } from "vant";
-import { publish } from "react_host/event";
+// import { showToast, closeToast } from "vant";
+import { publish } from "../utility";
 
 const service = axios.create({
   baseURL: process.env.APP_BASE_URI,
@@ -24,13 +24,13 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   (response) => {
     loadingCount--;
-    if (loadingCount === 0) {
-      closeToast();
-    }
+    // if (loadingCount === 0) {
+    //   closeToast();
+    // }
     return response;
   },
   (error) => {
-    closeToast();
+    // closeToast();
     if (error && error.response) {
       switch (error.response.status) {
         case 403:
@@ -43,7 +43,6 @@ service.interceptors.response.use(
     } else {
       error.message = "連線超時，請刷新頁面";
     }
-    showToast(error.message);
     return Promise.resolve(error.response);
   }
 );
