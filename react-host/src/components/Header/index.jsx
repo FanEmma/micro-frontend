@@ -1,57 +1,75 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import UserProfileWrapper from "solid_remote/UserProfileWrapper";
 import usePlatformStore from "../../store";
 import LogInPop from "../LogInPop";
 import { user } from "../../api";
+import { publish } from "../../utility";
 
 const Header = () => {
   const count = usePlatformStore((state) => state.count);
   const setAdd = usePlatformStore((state) => state.add);
   const clear = usePlatformStore((state) => state.clear);
   const [isOpen, setOpen] = useState(false);
+  const [isShowUserInfo, setShowUserInfo] = useState(false);
   const [isLogin, setLogin] = useState(false);
   const [userInfo, setUserInfo] = useState({});
+  const userProfileWrapperRef = useRef(null);
   const token = sessionStorage.getItem("access_token");
+  const eventName = "isLoginEvent";
+
   const handleClose = () => {
     document.body.style.overflow = "auto";
     setOpen(false);
   };
+
   async function fetchData() {
     await user.getProfile(token).then((res) => {
       sessionStorage.setItem("user_info", JSON.stringify(res.data));
       setUserInfo(res.data);
     });
     setLogin(true);
+    publish(eventName, true);
   }
+
   useEffect(() => {
     if (token) {
       fetchData();
     }
   }, [token]);
+
+  useEffect(() => {
+    publish(eventName, isLogin);
+    UserProfileWrapper(userProfileWrapperRef.current);
+  }, []);
+
   return (
     <>
       <div className="w-full text-gray-900 bg-blue-500 sticky top-0">
         <div className="flex flex-col max-w-screen-xl px-4 mx-auto md:items-center md:justify-between md:flex-row md:px-6 lg:px-8">
           <div className="p-4 flex flex-row w-full items-center justify-between">
-            <p
-              href="#"
-              className="text-lg font-semibold tracking-widest text-gray-900 uppercase rounded-lg  focus:outline-none focus:shadow-outline">
+            <p className="text-lg font-semibold tracking-widest text-gray-900 uppercase rounded-lg  focus:outline-none focus:shadow-outline">
               micro-frontends
             </p>
-            <nav className="flex gap-5">
-              <button
-                className="px-4 py-2 mt-2 text-sm font-semibold text-gray-900 bg-blue-400 rounded-lg  md:mt-0 hover:text-gray-900 focus:text-gray-900 hover:bg-blue-400 focus:bg-blue-400 focus:outline-none focus:shadow-outline"
-                href="#">
+            <nav className="flex gap-5 relative">
+              <button className="px-4 py-2 mt-2 text-sm font-semibold text-gray-900 bg-blue-400 rounded-lg  md:mt-0 hover:text-gray-900 focus:text-gray-900 hover:bg-blue-400 focus:bg-blue-400 focus:outline-none focus:shadow-outline">
                 Products
               </button>
+              {/* {isLogin && ( */}
               <button
                 className="px-4 py-2 mt-2 text-sm font-semibold text-white bg-blue-700 rounded-lg  md:mt-0  hover:bg-blue-700 focus:bg-blue-700 focus:outline-none focus:shadow-outline"
-                href="#"
+                onClick={() => {
+                  setShowUserInfo(!isShowUserInfo);
+                }}>
+                User
+              </button>
+              {/* )} */}
+              <button
+                className="px-4 py-2 mt-2 text-sm font-semibold text-white bg-blue-700 rounded-lg  md:mt-0  hover:bg-blue-700 focus:bg-blue-700 focus:outline-none focus:shadow-outline"
                 onClick={clear}>
                 Clear Cart
               </button>
               <button
                 className="px-4 py-2 mt-2 text-sm font-semibold text-white bg-blue-700 rounded-lg  md:mt-0  hover:bg-blue-700 focus:bg-blue-700 focus:outline-none focus:shadow-outline"
-                href="#"
                 onClick={setAdd}>
                 Add To Cart
               </button>
@@ -94,6 +112,10 @@ const Header = () => {
                   </svg>
                 </button>
               )}
+              <div
+                className="absolute top-12 left-0 shadow-lg hidden"
+                style={{ display: isShowUserInfo ? "block" : "none" }}
+                ref={userProfileWrapperRef}></div>
             </nav>
           </div>
         </div>

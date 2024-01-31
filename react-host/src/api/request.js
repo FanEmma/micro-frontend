@@ -1,5 +1,4 @@
 import axios from "axios";
-// import { showToast, closeToast } from "vant";
 import { publish } from "../utility";
 
 const service = axios.create({
@@ -8,12 +7,10 @@ const service = axios.create({
 });
 
 const eventName = "fetchEvent";
-let loadingCount = 0;
 
 service.interceptors.request.use(
   (config) => {
     publish(eventName, true);
-    loadingCount++;
     return config;
   },
   (error) => {
@@ -23,14 +20,9 @@ service.interceptors.request.use(
 
 service.interceptors.response.use(
   (response) => {
-    loadingCount--;
-    // if (loadingCount === 0) {
-    //   closeToast();
-    // }
     return response;
   },
   (error) => {
-    // closeToast();
     if (error && error.response) {
       switch (error.response.status) {
         case 403:
